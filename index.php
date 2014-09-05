@@ -13,7 +13,7 @@ case 'login':
 	'errorMessage' => 'Bad request, try to update launcher', 'cause' => 'Bad request'))));
     if (!m_login($jsonData['username'],$jsonData['password'])) {
 	header("HTTP/1.1 401 Unauthorized");
-	$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong password or username');
+	$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong username/password');
 	die(echo_log(json_encode($error)));
     }
     $status = m_checkban($jsonData['username']);
@@ -152,7 +152,7 @@ case 'ban':
 	die('Bad request');
     if (!m_login($_GET['username'],$_GET['password'])) {
 	header("HTTP/1.1 401 Unauthorized");
-	$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong password or username');
+	$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong username/password');
 	die(echo_log(json_encode($error)));
     }
     if ((!m_ismod($_GET['username']) || m_checkban($_GET['username']))) {
@@ -181,7 +181,7 @@ case 'unban':
 	die('Bad request');
     if (!m_login($_GET['username'],$_GET['password'])) {
 	header("HTTP/1.1 401 Unauthorized");
-	$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong password or username');
+	$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong usernam/passworde');
 	die(echo_log(json_encode($error)));
     }
     if ((!m_ismod($_GET['username']) || m_checkban($_GET['username']))) {
