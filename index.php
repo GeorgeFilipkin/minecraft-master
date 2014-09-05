@@ -18,8 +18,8 @@ case 'login':
     }
     $status = m_checkban($jsonData['username']);
     if ($status) {
-	$answer = array('error' => 'ban', 'errorMessage' => $jsonData['username']." был забанен модератором ".
-	    $status['who_banned']." по причине ".$status['reason']);
+	$answer = array('error' => 'ban', 'errorMessage' => $jsonData['username']." have been banned by ".
+	    $status['who_banned']." Reason: ".$status['reason']);
 	die(echo_log(json_encode($answer)));
     }
     header("HTTP/1.1 200 OK");
