@@ -165,7 +165,6 @@ case 'ban':
 	$answer = array('username' => $_GET['target'], 'status' => 'banned', 'info' => $status);
 	die(echo_log(json_encode($answer)));
     }
-
     if (!m_ban($_GET['username'],$_GET['target'],$_GET['reason'])) {
 	header("HTTP/1.1 500 Internal Server Error");
 	$answer = array('error' => 'Error', 'errorMessage' => 'Error', 'cause' => 'Internal error');
