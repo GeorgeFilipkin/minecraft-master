@@ -83,9 +83,19 @@ case 'hasJoined':
     $stmt->bind_result($clientToken);
     if (!$stmt->fetch()) 
 	die();
-    $skin=base64_encode(file_get_contents("./Skins/".$_GET['username']));
-    $answer = array('id' => $clientToken, 'properties' => array('name' => 'textures', 
-	'value' => $skin));
+    $value = array("timestamp" => time(), "profileId" => $clientToken, "profileName" => $_GET['username'], "isPublic" => "true",
+	"textures" => array(
+	    "SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']),
+	    "CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$_GET['username'])));
+    $value=json_encode($value,JSON_UNESCAPED_SLASHES);
+    $fp = fopen("./key.pem", "r");
+    $priv_key = fread($fp, filesize("./key.pem"));
+    fclose($fp);
+    $pk = openssl_pkey_get_private($priv_key);
+    openssl_sign(base64_encode($value),$signature,$pk);
+    $answer = array('id' => $clientToken, 'name' => $_GET['username'], 'properties' => array(array('name' => 'textures', 
+	'value' => base64_encode($value),
+	'signature' => base64_encode($signature))));
     echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
     break;
 
