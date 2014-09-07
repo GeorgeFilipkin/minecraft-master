@@ -83,8 +83,8 @@ case 'hasJoined':
     $stmt->bind_result($clientToken);
     if (!$stmt->fetch()) 
 	die();
-    $value = array("timestamp" => time(), "profileId" => $clientToken, "profileName" => $_GET['username'], "isPublic" => "true",
-	"textures" => array(
+    $value = array("timestamp" => time(), "profileId" => $clientToken, "profileName" => $_GET['username'], 
+	"isPublic" => "true", "textures" => array(
 	    "SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']),
 	    "CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$_GET['username'])));
     $value=json_encode($value,JSON_UNESCAPED_SLASHES);
