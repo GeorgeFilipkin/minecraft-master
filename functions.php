@@ -131,7 +131,7 @@ function get_skin($user,$skinData) {
     if (!file_put_contents($tmp,base64_decode($skinData)))
 	return FALSE;
     $info = getimagesize($tmp);
-    if ($info[0] != 64 || $info[1] != 32 || $info['mime'] != 'image/png') {
+    if ($info[0] != 64 || ($info[1] != 32 && $info[1] != 64) || $info['mime'] != 'image/png') {
 	error_log(print_r(getimagesize($tmp),true));
 	return FALSE;
     }
