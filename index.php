@@ -23,12 +23,13 @@ case 'login':
 	die(echo_log(json_encode($answer)));
     }
     header("HTTP/1.1 200 OK");
-    $accessToken=getGUID();
-    $clientToken=getGUID();
     $link = newdb();
-    $stmt = $link->prepare("UPDATE players SET clientToken=?, accessToken=? where player=?");
-    $stmt->bind_param('sss',$clientToken,$accessToken,$jsonData['username']);
+    $stmt = $link->prepare("SELECT clientToken,accessToken FROM players WHERE player=?");
+    $stmt->bind_param('s',$jsonData['username']);
     $stmt->execute();
+    $stmt->bind_result($clientToken,$accessToken);
+    $stmt->fetch();
+    $stmt->free_result();
     $stmt = $link->prepare("INSERT INTO ids(player,ip,ticket,launcher_ver,os,os_arch,os_version) 
 	VALUES(?,?,?,?,?,?,?)");
     $stmt->bind_param('sssssss',$jsonData['username'],$_SERVER['REMOTE_ADDR'],
