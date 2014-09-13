@@ -122,16 +122,16 @@ case (preg_match( '/profile.*/', $_GET['act'] ) ? true : false):
     break;
 
 case 'chpass':
-    if (empty($jsonData['username']) || empty($jsonData['password']))
+    if (empty($jsonData['username']) || empty($jsonData['password']) || empty($jsonData['newpassword']))
 	die(echo_log(json_encode(array('error' => 'Bad request', 
 	'errorMessage' => 'Bad request, try to update launcher', 'cause' => 'Bad request'))));
     if (!m_login($jsonData['username'],$jsonData['password'])) {
 	header("HTTP/1.1 401 Unauthorized");
 	die();
     }
-    $status = m_checkban($_GET['target']);
+    $status = m_checkban($jsonData['username']);
     if ($status) {
-	$answer = array('username' => $_GET['target'], 'status' => 'banned', 'info' => $status);
+	$answer = array('username' => $jsonData['username'], 'status' => 'banned', 'info' => $status);
 	die(echo_log(json_encode($answer)));
     }
     $link = newdb();
