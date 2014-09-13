@@ -135,7 +135,7 @@ function get_skin($user,$skinData) {
 	error_log(print_r(getimagesize($tmp),true));
 	return FALSE;
     }
-    if (!rename($tmp,"./Skins/".$user))
+    if (!rename($tmp,"./Skins/".strtolower($user)))
 	return FALSE;
     return TRUE;
 }
