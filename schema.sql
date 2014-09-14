@@ -67,6 +67,7 @@ CREATE TABLE `players` (
   `password` varchar(64) DEFAULT NULL,
   `salt` varchar(32) DEFAULT NULL,
   `ismod` tinyint(1) DEFAULT '0',
+  `isCapeOn` tinyint(1) DEFAULT '0',
   `clientToken` varchar(64) DEFAULT NULL,
   `accessToken` varchar(64) DEFAULT NULL,
   `serverId` varchar(64) DEFAULT NULL,
