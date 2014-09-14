@@ -10,7 +10,7 @@ case 'login':
 	empty($jsonData['ticket']) || empty($jsonData['launcherVersion']) ||
 	empty($jsonData['platform']))
 	die(echo_log(json_encode(array('error' => 'Bad request', 
-	'errorMessage' => 'Bad request, try to update launcher', 'cause' => 'Bad request'))));
+	'errorMessage' => 'Bad request', 'cause' => 'Bad request'))));
     if (!m_login($jsonData['username'],$jsonData['password'])) {
 	header("HTTP/1.1 401 Unauthorized");
 	$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong username/password');
@@ -45,7 +45,7 @@ case 'login':
 case 'setskin':
     if (empty($jsonData['username']) || empty($jsonData['password']) || empty($jsonData['skinData']))
 	die(echo_log(json_encode(array('error' => 'Bad request', 
-	'errorMessage' => 'Bad request, try to update launcher', 'cause' => 'Bad request'))));
+	'errorMessage' => 'Bad request', 'cause' => 'Bad request'))));
     if (!m_login($jsonData['username'],$jsonData['password']))
 	die();
     if (get_skin($jsonData['username'],$jsonData['skinData']))
@@ -78,16 +78,16 @@ case 'hasJoined':
     }
     header("HTTP/1.1 200 OK");
     $link = newdb();
-    $stmt = $link->prepare("SELECT clientToken FROM players WHERE player=?");
+    $stmt = $link->prepare("SELECT clientToken,isCapeOn FROM players WHERE player=?");
     $stmt->bind_param('s',$_GET['username']);
     $stmt->execute();
-    $stmt->bind_result($clientToken);
+    $stmt->bind_result($clientToken,$isCapeOn);
     if (!$stmt->fetch()) 
 	die();
-    $value = array("timestamp" => time(), "profileId" => $clientToken, "profileName" => $_GET['username'], 
-	"isPublic" => "true", "textures" => array(
-	    "SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']),
-	    "CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$_GET['username'])));
+    $value = array("timestamp" => time(), "profileId" => $clientToken, "profileName" => $_GET['username'], "isPublic" => "true",
+	"textures" => ($isCapeOn ? array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']),
+	"CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$_GET['username'])) :
+	array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']))));
     $value=json_encode($value,JSON_UNESCAPED_SLASHES);
     $fp = fopen("./key.pem", "r");
     $priv_key = fread($fp, filesize("./key.pem"));
@@ -104,18 +104,18 @@ case (preg_match( '/profile.*/', $_GET['act'] ) ? true : false):
     $id=explode('/',$_GET['act'])[1];
     $uuid=toUUID($id);
     $link = newdb();
-    $stmt = $link->prepare("SELECT player FROM players WHERE clientToken=?");
+    $stmt = $link->prepare("SELECT player, isCapeOn FROM players WHERE clientToken=?");
     $stmt->bind_param('s',$uuid);
     $stmt->execute();
-    $stmt->bind_result($player);
+    $stmt->bind_result($player,$isCapeOn);
     if (!$stmt->fetch()) {
 	if($GLOBALS['DEBUG']) error_log("can't get profile ID: $uuid");
 	die();
     }
     $value = array("timestamp" => time(), "profileId" => $uuid, "profileName" => $player, "isPublic" => "true",
-	"textures" => array(
-	    "SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$player),
-	    "CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$player)));
+	"textures" => ($isCapeOn ? array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$player),
+	"CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$player)) :
+	array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$player))));
     $value=json_encode($value,JSON_UNESCAPED_SLASHES);
     $answer = array('id' => $uuid, 'name' => $player, 'properties' => array(array('name' => 'textures', 
 	'value' => base64_encode($value))));
@@ -125,7 +125,7 @@ case (preg_match( '/profile.*/', $_GET['act'] ) ? true : false):
 case 'chpass':
     if (empty($jsonData['username']) || empty($jsonData['password']) || empty($jsonData['newpassword']))
 	die(echo_log(json_encode(array('error' => 'Bad request', 
-	'errorMessage' => 'Bad request, try to update launcher', 'cause' => 'Bad request'))));
+	'errorMessage' => 'Bad request', 'cause' => 'Bad request'))));
     if (!m_login($jsonData['username'],$jsonData['password'])) {
 	header("HTTP/1.1 401 Unauthorized");
 	die();
@@ -223,7 +223,7 @@ case 'checkban':
 case 'feedback':
     if (empty($jsonData['username']) || empty($jsonData['password']))
 	die(echo_log(json_encode(array('error' => 'Bad request', 
-	'errorMessage' => 'Bad request, try to update launcher', 'cause' => 'Bad request'))));
+	'errorMessage' => 'Bad request', 'cause' => 'Bad request'))));
     if (!m_login($jsonData['username'],$jsonData['password']))
 	die();
     if (file_put_contents("./feedback/".$jsonData['username'].".".
