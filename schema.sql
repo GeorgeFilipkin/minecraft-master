@@ -65,7 +65,7 @@ CREATE TABLE `players` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player` varchar(32) DEFAULT NULL,
   `password` varchar(64) DEFAULT NULL,
-  `salt` varchar(32) DEFAULT NULL,
+  `salt` varchar(64) DEFAULT NULL,
   `ismod` tinyint(1) DEFAULT '0',
   `isCapeOn` tinyint(1) DEFAULT '0',
   `clientToken` varchar(64) DEFAULT NULL,
