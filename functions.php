@@ -104,7 +104,6 @@ function newdb() {
 }
 
 function salt($salt, $password) {
-	//return hash_hmac("sha256", $password, $salt);
 	return sha1($salt.sha1($password));
 }
 
