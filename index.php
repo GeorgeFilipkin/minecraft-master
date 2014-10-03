@@ -4,6 +4,9 @@ require 'functions.php';
 $json=file_get_contents('php://input');
 $jsonData=json_decode($json,true);
 
+(empty($_GET['act'])) && die('wat');
+$skinDate=((time() * 1000));
+
 switch ($_GET['act']) {
 case 'login':
 	if (empty($jsonData['username']) || empty($jsonData['password']) ||
@@ -47,7 +50,7 @@ case 'setskin':
 		die(echo_log(json_encode(array('error' => 'Bad request', 
 		'errorMessage' => 'Bad request', 'cause' => 'Bad request'))));
 	if (!m_login($jsonData['username'],$jsonData['password']))
-		die();
+		die(echo_log(json_encode(array('error' => 'Bad login'))));
 	if (get_skin($jsonData['username'],$jsonData['skinData']))
 		$answer = array('username' => $jsonData['username'], 'status' => 'accepted');
 	else
@@ -84,7 +87,7 @@ case 'hasJoined':
 	$stmt->bind_result($clientToken,$isCapeOn);
 	if (!$stmt->fetch()) 
 		die();
-	$value = array("timestamp" => time(), "profileId" => $clientToken, "profileName" => $_GET['username'], "isPublic" => "true",
+	$value = array("timestamp" => $skinDate, "profileId" => $clientToken, "profileName" => $_GET['username'], "isPublic" => true,
 		"textures" => ($isCapeOn ? array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']),
 		"CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$_GET['username'])) :
 		array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']))));
@@ -112,7 +115,7 @@ case (preg_match( '/profile.*/', $_GET['act'] ) ? true : false):
 		if($GLOBALS['DEBUG']) error_log("can't get profile ID: $uuid");
 		die();
 	}
-	$value = array("timestamp" => time(), "profileId" => $uuid, "profileName" => $player, "isPublic" => "true",
+	$value = array("timestamp" => $skinDate, "profileId" => $uuid, "profileName" => $player, "isPublic" => true,
 		"textures" => ($isCapeOn ? array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$player),
 		"CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$player)) :
 		array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$player))));
@@ -123,39 +126,7 @@ case (preg_match( '/profile.*/', $_GET['act'] ) ? true : false):
 	break;
 
 case 'chpass':
-	if (empty($jsonData['username']) || empty($jsonData['password']) || empty($jsonData['newpassword']))
-		die(echo_log(json_encode(array('error' => 'Bad request', 
-		'errorMessage' => 'Bad request', 'cause' => 'Bad request'))));
-	if (!m_login($jsonData['username'],$jsonData['password'])) {
-		header("HTTP/1.1 401 Unauthorized");
-		die();
-	}
-	$status = m_checkban($jsonData['username']);
-	if ($status) {
-		$answer = array('username' => $jsonData['username'], 'status' => 'banned', 'info' => $status);
-		die(echo_log(json_encode($answer)));
-	}
-	$link = newdb();
-	$stmt = $link->prepare("SELECT salt FROM players where player=?");
-	$stmt->bind_param('s',$jsonData['username']);
-	$stmt->execute();
-	$stmt->bind_result($salt);
-	if (!$stmt->fetch()) {
-		if($GLOBALS['DEBUG']) error_log("can't fetch salt for ".$jsonData['username']);
-		die();
-	}
-	$stmt->free_result();
-	$stmt = $link->prepare("UPDATE players SET password=? WHERE player=?");
-	$stmt->bind_param('ss',salt($salt,$jsonData['newpassword']),$jsonData['username']);
-	if (!$stmt->execute()) {
-		$error = array('error' => 'Error', 'errorMessage' => 'Error',
-			'cause' => 'Internal error');
-		die(echo_log(json_encode($error)));
-	}
-	if($GLOBALS['DEBUG']) error_log("CHPASS: ".$jsonData['username']);
-	$answer = array('newpassword' => $jsonData['newpassword'], 'password' => $jsonData['password'],
-		'username' => $jsonData['username']);
-	echo_log(json_encode($answer));
+	echo_log(json_encode(array('error' => 'Use forum', 'errorMessage' => 'Error', 'cause' => 'Internal error')));
 	break;
 
 case 'ban':

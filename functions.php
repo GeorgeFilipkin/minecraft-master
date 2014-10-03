@@ -104,7 +104,8 @@ function newdb() {
 }
 
 function salt($salt, $password) {
-	return hash_hmac("sha256", $password, $salt);
+	//return hash_hmac("sha256", $password, $salt);
+	return sha1($salt.sha1($password));
 }
 
 function getGUID(){
@@ -135,7 +136,7 @@ function get_skin($user,$skinData) {
 		error_log(print_r(getimagesize($tmp),true));
 		return FALSE;
 	}
-	if (!rename($tmp,"./Skins/".strtolower($user)))
+	if (!rename($tmp,"./Skins/".$user))
 		return FALSE;
 	return TRUE;
 }
