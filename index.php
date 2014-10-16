@@ -5,6 +5,7 @@ $json=file_get_contents('php://input');
 $jsonData=json_decode($json,true);
 
 (empty($_GET['act'])) && die('wat');
+//$skinDate=round(microtime(true) * 1000)+90000;
 $skinDate=((time() * 1000));
 
 switch ($_GET['act']) {
@@ -72,12 +73,17 @@ case 'join':
 case 'hasJoined':
 	if(empty($_GET['username']) || empty($_GET['serverId']))
 		die('Bad request');
-	if(!m_hasJoined($_GET['username'],$_GET['serverId']))
-		die();
 	$status = m_checkban($_GET['username']);
 	if ($status) {
 		$answer = array('username' => $_GET['username'], 'status' => 'banned', 'info' => $status);
 		die(echo_log(json_encode($answer)));
+	}
+	if(!m_hasJoined($_GET['username'],$_GET['serverId'])) {
+		$answer=mojang_hasJoined($_GET['username'],$_GET['serverId']);
+		if (!strlen($answer))
+			die();
+		echo_log($answer);
+		break;
 	}
 	header("HTTP/1.1 200 OK");
 	$link = newdb();
@@ -137,7 +143,7 @@ case 'ban':
 		$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong username/password');
 		die(echo_log(json_encode($error)));
 	}
-	if ((!m_ismod($_GET['username']) || m_checkban($_GET['username']))) {
+	if ((!m_isMod($_GET['username']) || m_checkban($_GET['username']))) {
 		header("HTTP/1.1 401 Unauthorized");
 		$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Permission denied');
 		die(echo_log(json_encode($error)));
@@ -162,10 +168,10 @@ case 'unban':
 		die('Bad request');
 	if (!m_login($_GET['username'],$_GET['password'])) {
 		header("HTTP/1.1 401 Unauthorized");
-		$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong usernam/passworde');
+		$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong username/password');
 		die(echo_log(json_encode($error)));
 	}
-	if ((!m_ismod($_GET['username']) || m_checkban($_GET['username']))) {
+	if ((!m_isMod($_GET['username']) || m_checkban($_GET['username']))) {
 		header("HTTP/1.1 401 Unauthorized");
 		$error = array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Permission denied');
 		die(echo_log(json_encode($error)));
@@ -196,9 +202,9 @@ case 'feedback':
 		die(echo_log(json_encode(array('error' => 'Bad request', 
 		'errorMessage' => 'Bad request', 'cause' => 'Bad request'))));
 	if (!m_login($jsonData['username'],$jsonData['password']))
-		die();
+		die(json_encode(array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong username/password')));
 	if (file_put_contents("./feedback/".$jsonData['username'].".".
-		date('Y-m-d_H-i-s_').explode(" ",microtime())[0].".log",$jsonData['desc']."\n".$jsonData['log']."\n")) {
+		date('Y-m-d_H-i-s_').explode(" ",microtime())[0].".log",base64_decode($jsonData['desc'])."\n".base64_decode($jsonData['log'])."\n")) {
 			$answer = array('username' => $jsonData['username'], 'status' => 'accepted');
 		} else {
 			$answer = array('username' => $jsonData['username'], 'status' => 'not accepted');

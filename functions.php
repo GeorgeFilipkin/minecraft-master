@@ -23,6 +23,26 @@ function m_join($accessToken,$selectedProfile) {
 	return TRUE; 
 }
 
+function mojang_hasJoined($user,$serverId) {
+	$link = newdb();
+	$stmt = $link->prepare("SELECT isMojang, accessToken FROM players WHERE player=?");
+	$stmt->bind_param('s',$user);
+	$stmt->execute();
+	$stmt->bind_result($isMojang,$accessToken);
+	if (!$stmt->fetch()) {
+		if($GLOBALS['DEBUG']) error_log("mojang_hasJoined: $user is $isMojang");
+		return FALSE;
+	}
+	if (!$isMojang)
+		return FALSE;
+	$json = file_get_contents("https://sessionserver.mojang.com/session/minecraft/hasJoined?username=$user&serverId=$serverId");
+	if (strlen(json) == 0)
+		return FALSE;
+	$jsonData=json_decode($json,true);
+	$jsonData['id'] = $accessToken;
+	return json_encode($jsonData);
+}
+
 function m_hasJoined($user,$serverId) {
 	$link = newdb();
 	$stmt = $link->prepare("SELECT serverId FROM players WHERE player=?");
@@ -77,16 +97,16 @@ function m_unban($user,$target,$reason) {
 	return TRUE;
 }
 
-function m_ismod($user) {
+function m_isMod($user) {
 	$link = newdb();
-	$stmt = $link->prepare("SELECT ismod FROM players where player=?");
+	$stmt = $link->prepare("SELECT isMod FROM players where player=?");
 	$stmt->bind_param('s',$user);
 	if (!$stmt->execute())
 		return FALSE;
-	$stmt->bind_result($ismod);
+	$stmt->bind_result($isMod);
 	if (!$stmt->fetch())
 		return FALSE;
-	return (bool)$ismod;
+	return (bool)$isMod;
 }
 
 function echo_log($string){
