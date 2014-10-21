@@ -5,7 +5,6 @@ $json=file_get_contents('php://input');
 $jsonData=json_decode($json,true);
 
 (empty($_GET['act'])) && die('wat');
-//$skinDate=round(microtime(true) * 1000)+90000;
 $skinDate=((time() * 1000));
 
 switch ($_GET['act']) {
@@ -65,7 +64,7 @@ case 'join':
 	if (!m_join($jsonData['accessToken'],$jsonData['selectedProfile']))
 		die();
 	$link = newdb();
-	$stmt = $link->prepare("UPDATE players SET serverId=? where accessToken=?");
+	$stmt = $link->prepare("UPDATE players SET serverId=? WHERE accessToken=?");
 	$stmt->bind_param('ss',$jsonData['serverId'],$jsonData['accessToken']);
 	$stmt->execute();
 	break;
@@ -78,25 +77,30 @@ case 'hasJoined':
 		$answer = array('username' => $_GET['username'], 'status' => 'banned', 'info' => $status);
 		die(echo_log(json_encode($answer)));
 	}
-	if(!m_hasJoined($_GET['username'],$_GET['serverId'])) {
+	if(m_isMojang($_GET['username'])) {
 		$answer=mojang_hasJoined($_GET['username'],$_GET['serverId']);
 		if (!strlen($answer))
 			die();
 		echo_log($answer);
 		break;
-	}
+	} else 
+		m_hasJoined($_GET['username'],$_GET['serverId']) or die();
 	header("HTTP/1.1 200 OK");
 	$link = newdb();
-	$stmt = $link->prepare("SELECT clientToken,isCapeOn FROM players WHERE player=?");
+	$stmt = $link->prepare("SELECT clientToken,isCapeOn,skin FROM players WHERE player=?");
 	$stmt->bind_param('s',$_GET['username']);
 	$stmt->execute();
-	$stmt->bind_result($clientToken,$isCapeOn);
+	$stmt->bind_result($clientToken,$isCapeOn,$skin);
 	if (!$stmt->fetch()) 
 		die();
-	$value = array("timestamp" => $skinDate, "profileId" => $clientToken, "profileName" => $_GET['username'], "isPublic" => true,
+	error_log($_GET['username'].": $skin");
+	if(!$skin or $_GET['username']=='karn') #default skin
+		$skin = "fairy";
+	$value = array("timestamp" => $skinDate, "profileId" => $clientToken, "profileName" => $_GET['username'], 
 		"textures" => ($isCapeOn ? array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']),
 		"CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$_GET['username'])) :
-		array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']))));
+		array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$skin,
+		"metadata" => array("model" => "slim")))));
 	$value=json_encode($value,JSON_UNESCAPED_SLASHES);
 	$fp = fopen("./key.pem", "r");
 	$priv_key = fread($fp, filesize("./key.pem"));
@@ -113,21 +117,28 @@ case (preg_match( '/profile.*/', $_GET['act'] ) ? true : false):
 	$id=explode('/',$_GET['act'])[1];
 	$uuid=toUUID($id);
 	$link = newdb();
-	$stmt = $link->prepare("SELECT player, isCapeOn FROM players WHERE clientToken=?");
+	$stmt = $link->prepare("SELECT player,isCapeOn,skin FROM players WHERE clientToken=?");
 	$stmt->bind_param('s',$uuid);
 	$stmt->execute();
-	$stmt->bind_result($player,$isCapeOn);
-	if (!$stmt->fetch()) {
-		if($GLOBALS['DEBUG']) error_log("can't get profile ID: $uuid");
+	$stmt->bind_result($player,$isCapeOn,$skin);
+	if (!$stmt->fetch()) 
 		die();
-	}
-	$value = array("timestamp" => $skinDate, "profileId" => $uuid, "profileName" => $player, "isPublic" => true,
+	if(!$skin or $player=='karn')
+		$skin = "fairy"; #default skin
+	$value = array("timestamp" => $skinDate, "profileId" => $uuid, "profileName" => $player,
 		"textures" => ($isCapeOn ? array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$player),
 		"CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$player)) :
-		array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$player))));
+		array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$skin,
+		"metadata" => array("model" => "slim")))));
 	$value=json_encode($value,JSON_UNESCAPED_SLASHES);
+	$fp = fopen("./key.pem", "r");
+	$priv_key = fread($fp, filesize("./key.pem"));
+	fclose($fp);
+	$pk = openssl_pkey_get_private($priv_key);
+	openssl_sign(base64_encode($value),$signature,$pk);
 	$answer = array('id' => $uuid, 'name' => $player, 'properties' => array(array('name' => 'textures', 
-		'value' => base64_encode($value))));
+		'value' => base64_encode($value),
+		'signature' => base64_encode($signature))));
 	echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
 	break;
 

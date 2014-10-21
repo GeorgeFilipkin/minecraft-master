@@ -23,20 +23,29 @@ function m_join($accessToken,$selectedProfile) {
 	return TRUE; 
 }
 
-function mojang_hasJoined($user,$serverId) {
+function m_isMojang($user) {
 	$link = newdb();
-	$stmt = $link->prepare("SELECT isMojang, accessToken FROM players WHERE player=?");
+	$stmt = $link->prepare("SELECT isMojang FROM players WHERE player=?");
 	$stmt->bind_param('s',$user);
 	$stmt->execute();
-	$stmt->bind_result($isMojang,$accessToken);
+	$stmt->bind_result($isMojang);
 	if (!$stmt->fetch()) {
 		if($GLOBALS['DEBUG']) error_log("mojang_hasJoined: $user is $isMojang");
 		return FALSE;
 	}
-	if (!$isMojang)
+	return $isMojang;
+}
+
+function mojang_hasJoined($user,$serverId) {
+	$link = newdb();
+	$stmt = $link->prepare("SELECT accessToken FROM players WHERE player=?");
+	$stmt->bind_param('s',$user);
+	$stmt->execute();
+	$stmt->bind_result($accessToken);
+	if (!$stmt->fetch())
 		return FALSE;
 	$json = file_get_contents("https://sessionserver.mojang.com/session/minecraft/hasJoined?username=$user&serverId=$serverId");
-	if (strlen(json) == 0)
+	if (strlen($json) == 0)
 		return FALSE;
 	$jsonData=json_decode($json,true);
 	$jsonData['id'] = $accessToken;
@@ -110,7 +119,7 @@ function m_isMod($user) {
 }
 
 function echo_log($string){
-	if($GLOBALS['DEBUG']) error_log($string);
+	if($GLOBALS['DEBUG']) error_log($string."\n",3,"/var/www/master/debug.log");
 	echo($string);
 }
 
@@ -127,10 +136,11 @@ function salt($salt, $password) {
 	return sha1($salt.sha1($password));
 }
 
-function getGUID(){
+function getGUID($hyphen = true){
 	mt_srand((double)microtime()*10000);
 	$charid = md5(uniqid(rand(), true));
-	$hyphen = chr(45);// "-"
+	if($hyphen)
+		$hyphen = chr(45);// "-"
 	$uuid = substr($charid, 0, 8).$hyphen
 		.substr($charid, 8, 4).$hyphen
 		.substr($charid,12, 4).$hyphen
@@ -155,7 +165,20 @@ function get_skin($user,$skinData) {
 		error_log(print_r(getimagesize($tmp),true));
 		return FALSE;
 	}
-	if (!rename($tmp,"./Skins/".$user))
+	$link = newdb();
+	$stmt = $link->prepare("SELECT skin FROM players WHERE player=?");
+	$stmt->bind_param('s',$user);
+	$stmt->execute();
+	$stmt->bind_result($oldskin);
+	$stmt->fetch();
+	$stmt->free_result();
+	if($oldskin and is_readable("./Skins/".$oldskin))
+		unlink("./Skins/".$oldskin);
+	$newskin = getGUID(false).getGUID(false);
+	$stmt = $link->prepare("UPDATE players SET skin=? WHERE player=?");
+	$stmt->bind_param('ss',$newskin,$user);
+	$stmt->execute();
+	if (!rename($tmp,"./Skins/".$newskin))
 		return FALSE;
 	return TRUE;
 }

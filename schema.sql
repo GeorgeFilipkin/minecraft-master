@@ -64,6 +64,7 @@ DROP TABLE IF EXISTS `players`;
 CREATE TABLE `players` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player` varchar(32) DEFAULT NULL,
+  `skin` varchar(64) DEFAULT NULL,
   `password` varchar(64) DEFAULT NULL,
   `salt` varchar(64) DEFAULT NULL,
   `isMod` tinyint(1) DEFAULT '0',
