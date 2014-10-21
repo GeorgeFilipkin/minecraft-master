@@ -93,7 +93,6 @@ case 'hasJoined':
 	$stmt->bind_result($clientToken,$isCapeOn,$skin);
 	if (!$stmt->fetch()) 
 		die();
-	error_log($_GET['username'].": $skin");
 	if(!$skin or $_GET['username']=='karn') #default skin
 		$skin = "fairy";
 	$value = array("timestamp" => $skinDate, "profileId" => $clientToken, "profileName" => $_GET['username'], 
