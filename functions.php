@@ -119,7 +119,7 @@ function m_isMod($user) {
 }
 
 function echo_log($string){
-	if($GLOBALS['DEBUG']) error_log($string."\n",3,"/var/www/master/debug.log");
+	if($GLOBALS['DEBUG']) error_log($string);
 	echo($string);
 }
 
