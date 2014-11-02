@@ -93,7 +93,7 @@ case 'hasJoined':
 	$stmt->bind_result($clientToken,$isCapeOn,$skin);
 	if (!$stmt->fetch()) 
 		die();
-	if(!$skin or $_GET['username']=='karn') #default skin
+	if(!$skin or $_GET['username']=='Karn') #default skin
 		$skin = "fairy";
 	$value = array("timestamp" => $skinDate, "profileId" => $clientToken, "profileName" => $_GET['username'], 
 		"textures" => ($isCapeOn ? array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']),
