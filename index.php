@@ -93,8 +93,8 @@ case 'hasJoined':
 	$stmt->bind_result($clientToken,$isCapeOn,$skin);
 	if (!$stmt->fetch()) 
 		die();
-	if(!$skin or $_GET['username']=='karn') #default skin
-		$skin = "fairy";
+	if(!$skin)
+		$skin = "fairy"; #default skin
 	$value = array("timestamp" => $skinDate, "profileId" => $clientToken, "profileName" => $_GET['username'], 
 		"textures" => ($isCapeOn ? array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$_GET['username']),
 		"CAPE" => array("url" => "https://master.ttyh.ru/Capes/".$_GET['username'])) :
@@ -122,7 +122,7 @@ case (preg_match( '/profile.*/', $_GET['act'] ) ? true : false):
 	$stmt->bind_result($player,$isCapeOn,$skin);
 	if (!$stmt->fetch()) 
 		die();
-	if(!$skin or $player=='karn')
+	if(!$skin)
 		$skin = "fairy"; #default skin
 	$value = array("timestamp" => $skinDate, "profileId" => $uuid, "profileName" => $player,
 		"textures" => ($isCapeOn ? array("SKIN" => array("url" => "https://master.ttyh.ru/Skins/".$player),
