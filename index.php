@@ -5,6 +5,7 @@ $json=file_get_contents('php://input');
 $jsonData=json_decode($json,true);
 
 (empty($_GET['act'])) && die('wat');
+(!ini_get('date.timezone')) && date_default_timezone_set('UTC');
 $skinDate=((time() * 1000));
 
 switch ($_GET['act']) {
@@ -213,8 +214,9 @@ case 'feedback':
 		'errorMessage' => 'Bad request', 'cause' => 'Bad request'))));
 	if (!m_login($jsonData['username'],$jsonData['password']))
 		die(json_encode(array('error' => 'Unauthorized', 'errorMessage' => 'Unauthorized', 'cause' => 'Wrong username/password')));
-	if (file_put_contents("./feedback/".$jsonData['username'].".".
-		date('Y-m-d_H-i-s_').explode(" ",microtime())[0].".log",base64_decode($jsonData['desc'])."\n".base64_decode($jsonData['log'])."\n")) {
+	$logfile="./feedback/".$jsonData['username'].".".date('Y-m-d_H-i-s_').explode(" ",microtime())[0].".log";
+	if ((file_put_contents($logfile,gzdecode(base64_decode($jsonData['log'])))) ||
+		(file_put_contents($logfile,base64_decode($jsonData['desc'])."\n".base64_decode($jsonData['log'])."\n"))) {
 			$answer = array('username' => $jsonData['username'], 'status' => 'accepted');
 		} else {
 			$answer = array('username' => $jsonData['username'], 'status' => 'not accepted');
