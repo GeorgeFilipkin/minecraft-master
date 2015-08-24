@@ -154,7 +154,7 @@ case strpos($_GET['act'], 'users/profiles/minecraft/') === 0:
 		header("HTTP/1.0 204 No Response");
 		break;
 	}
-	$answer = array('id' => $id, 'name' => $name);
+	$answer = array('id' => str_replace('-', '', $id), 'name' => $name);
 	echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
 	break;
 	
@@ -171,7 +171,7 @@ case strpos($_GET['act'], 'profiles/minecraft') === 0:
 		$stmt->execute();
 		$stmt->bind_result($id);
 		if ($stmt->fetch() && $id) {
-			$answer[] = array('id'=> $id, 'name' => $name);
+			$answer[] = array('id'=> str_replace('-', '', $id), 'name' => $name);
 		}
 	}
 	echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
