@@ -113,7 +113,7 @@ case 'hasJoined':
 	echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
 	break;
 
-case strpos($_GET['act'], 'profile/') === 0:
+case stripos($_GET['act'], 'profile/') === 0:
 	$id=explode('/',$_GET['act'])[1];
 	$uuid=toUUID($id);
 	$link = newdb();
@@ -142,7 +142,7 @@ case strpos($_GET['act'], 'profile/') === 0:
 	echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
 	break;
 	
-case strpos($_GET['act'], 'users/profiles/minecraft/') === 0:
+case stripos($_GET['act'], 'users/profiles/minecraft/') === 0:
 	$name = substr($_GET['act'], strlen('users/profiles/minecraft/'));
 	$name = explode('?', $name)[0];
 	$link = newdb();
@@ -158,7 +158,7 @@ case strpos($_GET['act'], 'users/profiles/minecraft/') === 0:
 	echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
 	break;
 	
-case strpos($_GET['act'], 'profiles/minecraft') === 0:
+case stripos($_GET['act'], 'profiles/minecraft') === 0:
 	if(count($jsonData) > 100) {
 		echo_log(json_encode(array('error' => 'Too many', 'errorMessage' => 'Error', 'cause' => 'over100')));
 		break;
