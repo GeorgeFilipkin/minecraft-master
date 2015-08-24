@@ -113,7 +113,7 @@ case 'hasJoined':
 	echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
 	break;
 
-case (preg_match( '/profile.*/', $_GET['act'] ) ? true : false):
+case strpos($_GET['act'], 'profile/') === 0:
 	$id=explode('/',$_GET['act'])[1];
 	$uuid=toUUID($id);
 	$link = newdb();
@@ -141,7 +141,42 @@ case (preg_match( '/profile.*/', $_GET['act'] ) ? true : false):
 		'signature' => base64_encode($signature))));
 	echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
 	break;
-
+	
+case strpos($_GET['act'], 'users/profiles/minecraft/') === 0:
+	$name = substr($_GET['act'], strlen('users/profiles/minecraft/'));
+	$name = explode('?', $name)[0];
+	$link = newdb();
+	$stmt = $link->prepare("SELECT clientToken FROM players WHERE player = ?");
+	$stmt->bind_param('s',$name);
+	$stmt->execute();
+	$stmt->bind_result($id);
+	if (!$stmt->fetch() || !$id) {
+		header("HTTP/1.0 204 No Response");
+		break;
+	}
+	$answer = array('id' => $id, 'name' => $name);
+	echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
+	break;
+	
+case strpos($_GET['act'], 'profiles/minecraft') === 0:
+	if(count($jsonData) > 100) {
+		echo_log(json_encode(array('error' => 'Too many', 'errorMessage' => 'Error', 'cause' => 'over100')));
+		break;
+	}
+	$answer = array();
+	$link = newdb();
+	$stmt = $link->prepare("SELECT clientToken FROM players WHERE player = ?");
+	foreach($jsonData as $name) {
+		$stmt->bind_param('s',$name);
+		$stmt->execute();
+		$stmt->bind_result($id);
+		if ($stmt->fetch() && $id) {
+			$answer[] = array('id'=> $id, 'name' => $name);
+		}
+	}
+	echo_log(json_encode($answer,JSON_UNESCAPED_SLASHES));
+	break;
+	
 case 'chpass':
 	echo_log(json_encode(array('error' => 'Use forum', 'errorMessage' => 'Error', 'cause' => 'Internal error')));
 	break;
